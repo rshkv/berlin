@@ -2,7 +2,7 @@ var hdb        = require('hdb');
 var fs         = require("fs");
 var Q          = require('q');
 
-var jsonFile = 'deutschland.geojson'
+var jsonFile = 'postleitzahlen.geojson'
 var parsedJsonFile = null;
 var populationDensityRanking = 'SELECT ZIP,INHABITANTS,INHABITANTS_PER_KM2,(INHABITANTS - MIN(INHABITANTS) OVER ())/ (MAX(INHABITANTS) OVER () - MIN(INHABITANTS) OVER ()) AS RANKING_NORMALIZED,NTILE(100) OVER (ORDER BY INHABITANTS DESC) AS RANKING_PERCENTILE	FROM "TUKGRP2"."PLZ_DATA_STBA"';
 
@@ -85,7 +85,7 @@ function reformatJson(queryResults) {
   }
   console.log('Wrote new properties into GEOJSON structure...')
 
-  fs.writeFileSync('de-alternative.geojson', JSON.stringify(parsedJsonFile))
+  fs.writeFileSync('postleitzahlen-alternative.geojson', JSON.stringify(parsedJsonFile))
   console.log('Wrote new GEOJSON file')
 }
 
