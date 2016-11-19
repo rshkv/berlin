@@ -1,0 +1,21 @@
+{
+  "name": "premiumcode",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Willi Raschkowski <willi@raschkowski.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/flxw/premiumprojekt",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "^4.3.0"
+  }
+}
