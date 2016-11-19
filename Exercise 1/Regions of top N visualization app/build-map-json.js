@@ -65,9 +65,9 @@ function reformatJson(queryResults) {
   for (var result in queryResults) {
     zipMapping[queryResults[result].ZIP] = {
       'zip': zip,
-      'population-density-ranking-norm': queryResults[result].RANKING_NORMALIZED,
-      'population-density-ranking-perc': queryResults[result].RANKING_PERCENTILE,
-      'population-density': queryResults[result].INHABITANTS_PER_KM2,
+      'populationDensityRankingNorm': parseFloat(queryResults[result].RANKING_NORMALIZED),
+      'populationDensityRankingPerc': queryResults[result].RANKING_PERCENTILE,
+      'populationDensity': queryResults[result].INHABITANTS_PER_KM2,
       'population': queryResults[result].INHABITANTS
     }
   }
