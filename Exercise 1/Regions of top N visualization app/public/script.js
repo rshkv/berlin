@@ -6,7 +6,7 @@ const svg = d3.select("body")
 	.attr("width", width)
 	.attr("height", height);
 
-d3.json("data/postleitzahlen.geojson", (data) => {
+d3.json("postleitzahlen.geojson", (data) => {
 	const projection = d3.geoMercator()
 		.fitExtent([[0, 0], [width, height]], data);
 
