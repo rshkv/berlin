@@ -10,18 +10,12 @@ def translation(name):
     return decorator
 
 
-def has_relative(f):
-    f.has_relative = True
-    return f
-
-
 class PopulationStats:
 
     @classmethod
     def _read_csv(cls, path):
         df = pd.read_csv(path, encoding='iso8859', sep=';')
         df = df.drop(['Bezirk', 'Ortsteil'], axis=1)
-        df = df.set_index(['Ortst-Name'])
         return df
 
     def __init__(self, path):
@@ -31,44 +25,46 @@ class PopulationStats:
     def population(self, df=None, relative=False):
         if df is None:
             df = self.df
-        total = df.groupby(level=0)['Häufigkeit'].sum()
+        total = df.groupby('Ortst-Name')['Häufigkeit'].sum()
         if not relative:
-            return total
+            return total.astype(float)
         return total / self.population()
 
-    @has_relative
     @translation('Frauen')
-    def females(self, rel=False):
+    def females(self, rel=True):
         return self.population(self.df[self.df['Geschl'] == 2], rel)
 
-    @has_relative
     @translation('Männer')
-    def males(self, rel=False):
+    def males(self, rel=True):
         return self.population(self.df[self.df['Geschl'] == 1], rel)
 
-    @has_relative
     @translation('Ausländer')
-    def foreigners(self, rel=False):
+    def foreigners(self, rel=True):
         return self.population(self.df[self.df['Staatsangeh'] == 'A'], rel)
 
-    @has_relative
     @translation('Deutsche')
-    def translations(self, rel=False):
+    def translations(self, rel=True):
         return self.population(self.df[self.df['Staatsangeh'] == 'D'], rel)
 
     @translation('Bezirk')
     def district_names(self):
-        return self.df.groupby(level=0)['Bez-Name'].first()
+        return self.df.groupby('Ortst-Name')['Bez-Name'].first()
+
+    @translation('Altersgruppen')
+    def age_groups(self):
+        return self.df.groupby(['Ortst-Name', 'Altersgr'])['Häufigkeit'].sum() \
+            .unstack(level=-1) \
+            .fillna(0) \
+            .divide(self.population(), axis='index') \
+            .rename(columns=lambda c: c.replace('_', ' bis ')) \
+            .to_dict(orient='index')
 
     def __iter__(self):
         for attr in dir(self):
             f = getattr(self, attr)
             if attr.startswith('_') or not callable(f):
                 continue
-            yield f.translation, f
-
-            if getattr(f, 'has_relative', False):
-                yield f.translation + ' (relativ)', ft.partial(f, rel=True)
+            yield f.translation, f()
 
 
 class GeoJSON:
