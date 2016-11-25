@@ -6,7 +6,7 @@ const svg = d3.select("body")
 	.attr("width", width)
 	.attr("height", height);
 
-d3.json("maps/Berlin-Ortsteile.geojson", (berlin) => {
+d3.json("maps/berlin.geojson", (berlin) => {
 	//console.log(data);
 	//const berlin = topojson.feature(data,	data.objects['Berlin-Ortsteile']);
 	console.log(berlin);
@@ -26,7 +26,7 @@ d3.json("maps/Berlin-Ortsteile.geojson", (berlin) => {
 		.append("path")
 		.attr("d", path)
 		.on("click", (d) => {
-			console.log(d.properties.Name);
+			console.log(d.properties);
 		});
 		//.style("fill", "rgb(0,109,44)")
 		//.style("fill", d => color(d.properties.populationDensityRankingNorm))
