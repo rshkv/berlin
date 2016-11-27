@@ -2,9 +2,9 @@ var hdb        = require('hdb');
 var fs         = require("fs");
 var Q          = require('q');
 
-var jsonFile = 'postleitzahlen.geojson'
+var jsonFile = 'berlin.geojson'
 var parsedJsonFile = null;
-var populationDensityRanking = 'SELECT ZIP,INHABITANTS,INHABITANTS_PER_KM2,(INHABITANTS - MIN(INHABITANTS) OVER ())/ (MAX(INHABITANTS) OVER () - MIN(INHABITANTS) OVER ()) AS RANKING_NORMALIZED,NTILE(100) OVER (ORDER BY INHABITANTS DESC) AS RANKING_PERCENTILE	FROM "TUKGRP2"."PLZ_DATA_STBA"';
+var populationDensityRanking = 'SELECT zipmap."Bezirk" AS BEZIRK, COUNT(ps.ID) AS INHABITANTS, AVG(YEAR(CURRENT_DATE) - YEAR(BIRTH_DATE)) AS AVGAGE, SUM(WEIGHT) AS SUMWEIGHT, AVG(WEIGHT) AS AVGWEIGHT, SUM(HEIGHT) AS SUMHEIGHT, AVG(HEIGHT) AS AVGHEIGHT FROM "TUK"."PERSONS_S" ps JOIN "TUKGRP2"."PLZ_BEZIRK_MAPPING" zipmap ON ps.ZIP = zipmap.PLZ GROUP BY zipmap."Bezirk"';
 
 var hanaClient = hdb.createClient({
   host     : '192.168.30.150',
@@ -58,40 +58,44 @@ function queryHana() {
   return deferred.promise
 }
 
-function reformatJson(queryResults) {
-  var zipMapping = {};
+function enrichJson(queryResults) {
+  var bezirkMapping = {};
 
   // iterate over query results
   for (var result in queryResults) {
-    zipMapping[queryResults[result].ZIP] = {
-      'zip': zip,
-      'populationDensityRankingNorm': parseFloat(queryResults[result].RANKING_NORMALIZED),
-      'populationDensityRankingPerc': queryResults[result].RANKING_PERCENTILE,
-      'populationDensity': queryResults[result].INHABITANTS_PER_KM2,
-      'population': queryResults[result].INHABITANTS
+    bezirkMapping[queryResults[result].BEZIRK] = {
+      'inhabitants': queryResults[result].INHABITANTS,
+      'age_average': queryResults[result].AVGAGE,
+      'age_sum': queryResults[result].SUMAGE,
+      'weight_average': queryResults[result].AVGWEIGHT,
+      'weight_sum': queryResults[result].SUMWEIGHT,
+      'height_average': queryResults[result].AVGHEIGHT,
+      'height_sum': queryResults[result].SUMHEIGHT,
     }
   }
-  console.log("Processed zip population mapping results")
+  console.log("Processed bezirk statistics")
 
 
   //delete queryResults;
 
   // iterate over jsonFile
-  console.log(parsedJsonFile.features.length)
   for (var i = 0, j = parsedJsonFile.features.length-1; i < j; ++i) {
-    var zip = parsedJsonFile.features[i].properties.postcode    
+    var bzrk = parsedJsonFile.features[i].properties.Bezirk    
     // rewrite the whole properties section
-    if (zip in zipMapping) parsedJsonFile.features[i].properties = zipMapping[zip];
+    if (bzrk in bezirkMapping) { 
+      console.log('Added HANA data for: ', bzrk);
+      parsedJsonFile.features[i].properties['fromhana'] = bezirkMapping[bzrk];
+    }
   }
   console.log('Wrote new properties into GEOJSON structure...')
 
-  fs.writeFileSync('postleitzahlen-alternative.geojson', JSON.stringify(parsedJsonFile))
+  fs.writeFileSync('berlin-alternative.geojson', JSON.stringify(parsedJsonFile))
   console.log('Wrote new GEOJSON file')
 }
 
 Q.all([connectHana(), readRawGeoJson()])
  .then(queryHana)
- .then(reformatJson)
+ .then(enrichJson)
  .then(function() {
    process.exit(0)
  })
