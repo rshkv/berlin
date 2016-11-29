@@ -73,7 +73,6 @@ class GeoJSON:
         self.data = json.load(open(geojson))
         self.features = {f['properties'][index]: f['properties']
                          for f in self.data['features']}
-        self.drop('Description')
 
     def __getitem__(self, key):
         return self.features[key]
@@ -93,7 +92,9 @@ class GeoJSON:
     def names(self):
         return sorted(f['Name'] for f in self.features.values())
 
-if __name__ == '__main__':
-    berlin = GeoJSON('data/Berlin-Ortsteile.geojson')
-    berlin['Mitte']['Description'] = 2
-    print(berlin.data['features'][0]['properties'])
+    def correct_buckow(self):
+        """Buckow consists of two parts and occurs twice in the data."""
+        props = self['Buckow']
+        for f in self.data['features']:
+            if f['properties']['Name'] == 'Buckow':
+                f['properties'] = props

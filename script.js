@@ -6,11 +6,10 @@ const svg = d3.select("body")
 	.attr("width", width)
 	.attr("height", height);
 
-d3.json("maps/berlin.geojson", (berlin) => {
-	//console.log(data);
-	//const berlin = topojson.feature(data,	data.objects['Berlin-Ortsteile']);
-	console.log(berlin);
+const color = d3.scaleSequential(d3.interpolateOrRd);
 
+d3.json("data/berlin.json", (berlin) => {
+	
 	const projection = d3.geoMercator()
 		.fitExtent([[0, 0], [width, height]], berlin);
 
@@ -24,9 +23,10 @@ d3.json("maps/berlin.geojson", (berlin) => {
 		.data(berlin.features)
 		.enter()
 		.append("path")
+		.style("fill", d => color(d.properties["Ausländer"]))
 		.attr("d", path)
 		.on("click", (d) => {
-			console.log(d.properties);
+			console.log(d.properties.Name);
 		});
 		//.style("fill", "rgb(0,109,44)")
 		//.style("fill", d => color(d.properties.populationDensityRankingNorm))
