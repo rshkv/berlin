@@ -92,9 +92,31 @@ class GeoJSON:
     def names(self):
         return sorted(f['Name'] for f in self.features.values())
 
+    """
+        Utilities
+    """
+
     def correct_buckow(self):
         """Buckow consists of two parts and occurs twice in the data."""
         props = self['Buckow']
         for f in self.data['features']:
             if f['properties']['Name'] == 'Buckow':
-                f['properties'] = props
+                f['properties'] = props.copy()
+
+    def merge_age_groups(self):
+        new_keys = ['0 bis 10', '10 bis 20', '20 bis 30', '30 bis 40',
+                    '40 bis 50', '50 bis 60', '60 bis 70', '70 bis 80',
+                    '80 bis 90', '90 und älter']
+        old_keys = sorted(self.data['features'][0]['properties']
+                          ['Altersgruppen'].keys())
+
+        def merge_feature(f):
+            keys = zip(zip(old_keys[::2], old_keys[1::2]), new_keys)
+            old_groups = f['properties']['Altersgruppen']
+            new_groups = {}
+            for (old_1, old_2), new in keys:
+                new_groups[new] = old_groups[old_1] + old_groups[old_2]
+            return new_groups
+
+        for feature in self.data['features']:
+            feature['properties']['Altersgruppen'] = merge_feature(feature)

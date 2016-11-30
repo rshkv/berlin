@@ -1,7 +1,14 @@
-const width = 1000;
-const height = 600;
+//$(document).on("change", ".legend input", () => {
+	//console.log("Changed radio");
+//});
+$(".legend input").click(() => {
+	console.log("Changed radio");
+});
 
-const svg = d3.select("body")
+const width = parseInt(d3.select(".chart").style("width"));
+const height = parseInt(d3.select(".chart").style("height"));
+
+const svg = d3.select(".chart")
 	.append("svg")
 	.attr("width", width)
 	.attr("height", height);
@@ -26,7 +33,7 @@ d3.json("data/berlin.json", (berlin) => {
 		.style("fill", d => color(d.properties["Ausländer"]))
 		.attr("d", path)
 		.on("click", (d) => {
-			console.log(d.properties.Name);
+			console.log(d.properties);
 		});
 		//.style("fill", "rgb(0,109,44)")
 		//.style("fill", d => color(d.properties.populationDensityRankingNorm))
