@@ -1,6 +1,7 @@
 import json
-import functools as ft
 import pandas as pd
+import functools as ft
+from collections import defaultdict
 
 
 def translation(name):
@@ -120,3 +121,20 @@ class GeoJSON:
 
         for feature in self.data['features']:
             feature['properties']['Altersgruppen'] = merge_feature(feature)
+
+    def extents(self):
+        extents = {}
+        for f in self.features.values():
+            for k, v in f.items():
+                if not type(v) is dict:
+                    continue
+                if k not in extents:
+                    extents[k] = defaultdict(lambda: [float('inf'), float('-inf')])
+                for kk, vv in v.items():
+                    if extents[k][kk][0] > vv:
+                        extents[k][kk][0] = vv  # Min value
+                    if extents[k][kk][1] < vv:
+                        extents[k][kk][1] = vv  # Max value
+        for k in extents.keys():
+            extents[k] = dict(extents[k])
+        return extents
