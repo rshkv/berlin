@@ -49,7 +49,10 @@ html {
 }
 
 .hoverSelection {
+	position: absolute;
+	bottom: 0;
 	height: 8%;
 	font-size: 15px;
 	white-space: nowrap;
+	pointer-events: none;
 }
