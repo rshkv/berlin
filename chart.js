@@ -1,13 +1,9 @@
 class Heatmap {
 
-	constructor(selection) {
+	constructor(selection, berlin) {
 		this.selection = selection;
-
+		this.extents = berlin.extents;
 		this.color = d3.scaleSequential(d3.interpolateOrRd);
-		this.accessors = {
-			Frauen: "Frauen",
-			Männer: "Männer"
-		}
 	}
 
 	pathGenerator(svg, data) {
@@ -31,7 +27,7 @@ class Heatmap {
 				.data(data.features)
 				.enter()
 				.append("path")
-				.style("fill", this.fillAccessor)
+				.style("fill", this.accessor)
 				.attr("d", path)
 				.on("click", (d) => {
 					console.log(d.properties);
@@ -56,17 +52,23 @@ class Heatmap {
 
 			svg.selectAll("path")
 				.data(data.features)
-				.style("fill", this.fillAccessor)
+				.style("fill", this.accessor)
 				.attr("d", path);
 		});
 	}
 
-	setProperty(property) {
-		const path = property;
-		this.fillAccessor = d => {
-			//console.log(d.properties);
-			//console.log(path);
-			return this.color(parseFloat(_.get(d.properties, path)));
+	setProperty(path, normalize) {
+		let extent = _.get(this.extents, path);
+		const range = extent[1] - extent[0];
+		const widen = 0.1;
+		console.log(extent);
+		extent = [extent[0] - widen * range, extent[1] + widen * range];
+		console.log(extent);
+		this.color
+			.domain(normalize ? extent: [0, 1]);
+		this.accessor = d => {
+			const value = _.get(d.properties, path);
+			return (value) ? this.color(value) : "white";
 		};
 		return this;
 	}

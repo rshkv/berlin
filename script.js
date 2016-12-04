@@ -15,7 +15,7 @@ d3.json("data/berlin.json", (berlin) => {
 		.attr("height", height)
 		.datum(berlin);
 
-	const heatmap = new Heatmap(svg);
+	const heatmap = new Heatmap(svg, berlin);
 
 	heatmap
 		.setProperty("Geschlecht.Frauen")
@@ -23,8 +23,10 @@ d3.json("data/berlin.json", (berlin) => {
 
 	$(".legend input").click(function(event) {
 		const property = $(this).attr('id');
+		const normalize = $(this).attr('normalize');
+
 		heatmap
-			.setProperty(property)
+			.setProperty(property, normalize)
 			.update();
 	});
 
